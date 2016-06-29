@@ -1,8 +1,7 @@
-import json
-import requests
 import csv
+from skyscanner import FlightsCache
 
-api_key = ""
+flights_cache_service = FlightsCache('')
 
 with open('prices.csv', 'a+') as csvprecos:
     fieldnames = ['Origem', 'Destino', 'DataPesquisa', 'DataCotacao', 'DataViagem', 'Preco', 'Direto']
@@ -19,14 +18,16 @@ with open('viagens.csv', 'r') as csvfile:
         destino = row[1]
         datapesquisa = row[2]
 
-        url = "http://partners.api.skyscanner.net/apiservices/browseroutes/v1.0/BR/BRL/pt-BR/"+ origem + "/" \
-        "" + destino + "/" + datapesquisa + "?apiKey=" + api_key
+        result = flights_cache_service.get_cheapest_price_by_date(
+            market='BR',
+            currency='BRL',
+            locale='pt-BR',
+            originplace=origem,
+            destinationplace=destino,
+            outbounddate=datapesquisa).parsed
 
-        headers = {'content-type': 'application/json'}
+        data = result
 
-
-        response = requests.get(url,  headers=headers)
-        data = json.loads(response.content.decode('utf-8'))
         if ('Quotes' in data and data['Quotes']):
             datacotacao = data['Quotes'][0]['QuoteDateTime']
             dataviagem = data['Quotes'][0]['OutboundLeg']['DepartureDate']
